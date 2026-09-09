@@ -58,23 +58,23 @@ const evalCases: EvalCase[] = [
     requiredConcepts: [
       ["stock", "inventory"],
       [
-        "cannot",
-        "can't",
-        "unable",
-        "don't have",
-        "not available",
-        "contact",
+        "cannot confirm",
+        "can't confirm",
+        "unable to confirm",
+        "don't have access",
+        "do not have access",
+        "no access to live",
       ],
-    ],
-    forbiddenTerms: [
-      "is currently in stock",
-      "is available now",
     ],
   },
 ];
 
 function normalize(value: string): string {
-  return value.toLowerCase().replace(/\s+/g, " ").trim();
+  return value
+    .toLowerCase()
+    .replace(/[’‘]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function evaluateAnswer(

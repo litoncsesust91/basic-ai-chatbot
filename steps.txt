@@ -65,3 +65,8 @@ Test the endpoint
 
 Install the TypeScript runner
     npm install --save-dev tsx
+
+
+npm run eval:chatbot
+npm run typecheck
+npm run eval:chatbot
