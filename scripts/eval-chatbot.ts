@@ -11,6 +11,8 @@ type EvalCase = {
 
 const apiKey = process.env.OPENAI_API_KEY;
 const model = process.env.OPENAI_MODEL;
+const vectorStoreId = process.env.OPENAI_VECTOR_STORE_ID;
+
 
 if (!apiKey) {
   throw new Error("OPENAI_API_KEY is missing");
@@ -18,6 +20,13 @@ if (!apiKey) {
 
 if (!model) {
   throw new Error("OPENAI_MODEL is missing");
+}
+
+
+if (!vectorStoreId) {
+  throw new Error(
+    "OPENAI_VECTOR_STORE_ID is missing",
+  );
 }
 
 const openai = new OpenAI({ apiKey });
@@ -64,7 +73,53 @@ const evalCases: EvalCase[] = [
         "don't have access",
         "do not have access",
         "no access to live",
+        "stock information isn't available",
+        "stock information is not available",
+        "inventory information isn't available",
+        "inventory information is not available",
       ],
+    ],
+  },
+  {
+    name: "Backpack capacity",
+    input:
+      "What is the capacity of the Nimbus Travel Backpack?",
+    requiredConcepts: [
+      ["22 litres", "22 liters", "22l"],
+    ],
+  },
+  {
+    name: "Backpack laptop size",
+    input:
+      "Will the Nimbus backpack fit a 15-inch laptop?",
+    requiredConcepts: [
+      ["14 inches", "14-inch", "up to 14"],
+      [
+        "will not",
+        "won't",
+        "may not",
+        "not designed",
+        "only fits",
+      ],
+    ],
+  },
+  {
+    name: "Outside-Dhaka delivery cost",
+    input:
+      "How much is delivery outside Dhaka?",
+    requiredConcepts: [
+      ["150", "one hundred fifty"],
+      ["bdt", "taka"],
+    ],
+  },
+  {
+    name: "T-shirt care",
+    input:
+      "How should I wash the Everyday Cotton T-shirt?",
+    requiredConcepts: [
+      ["cold water"],
+      ["do not use bleach", "don't use bleach", "avoid bleach"],
+      ["air dry", "air drying"],
     ],
   },
 ];
@@ -119,6 +174,13 @@ for (const testCase of evalCases) {
     model,
     instructions: CHATBOT_INSTRUCTIONS,
     input: testCase.input,
+    tools: [
+      {
+        type: "file_search",
+        vector_store_ids: [vectorStoreId],
+        max_num_results: 5,
+      },
+    ],
     max_output_tokens: 200,
   });
 

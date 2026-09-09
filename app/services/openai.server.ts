@@ -26,9 +26,16 @@ export async function streamChatReply(
   messages: ConversationMessage[],
 ) {
   const model = process.env.OPENAI_MODEL;
+  const vectorStoreId = process.env.OPENAI_VECTOR_STORE_ID;
 
   if (!model) {
     throw new Error("OPENAI_MODEL is not configured");
+  }  
+
+  if (!vectorStoreId) {
+    throw new Error(
+      "OPENAI_VECTOR_STORE_ID is not configured",
+    );
   }
 
     return getOpenAIClient().responses.create({
