@@ -62,3 +62,6 @@ Test the endpoint
     answer
     ------
     An LLM is...
+
+Install the TypeScript runner
+    npm install --save-dev tsx
