@@ -1,0 +1,64 @@
+Create project: npx create-react-router@latest basic-ai-chatbot
+    npm install
+    npm run dev
+    npm install openai
+Create .env in root
+    OPENAI_API_KEY=paste_your_secret_key_here
+    OPENAI_MODEL=gpt-6-astra
+
+Create test-openai.mjs file in root
+    import OpenAI from "openai";
+
+    const apiKey = process.env.OPENAI_API_KEY;
+    const model = process.env.OPENAI_MODEL;
+
+    if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is missing");
+    }
+
+    if (!model) {
+    throw new Error("OPENAI_MODEL is missing");
+    }
+
+    const openai = new OpenAI({ apiKey });
+
+    try {
+    const response = await openai.responses.create({
+        model,
+        instructions: [
+        "You are a helpful assistant.",
+        "Keep your response short and clear.",
+        ].join(" "),
+        input: "Introduce yourself in one sentence.",
+    });
+
+    console.log(response.output_text);
+    } catch (error) {
+    console.error("OpenAI request failed:", error);
+    process.exitCode = 1;
+    }
+
+node --env-file=.env test-openai.mjs
+Expected result: 
+    I’m a helpful AI assistant...
+
+
+Test the endpoint
+
+    Keep the application running. Open another PowerShell terminal inside the project and run:
+
+    $body = @{
+    message = "What is an LLM? Answer in one sentence."
+    } | ConvertTo-Json
+
+    Invoke-RestMethod `
+    -Uri "http://localhost:5173/api/chat" `
+    -Method Post `
+    -ContentType "application/json" `
+    -Body $body
+
+    Expected shape:
+
+    answer
+    ------
+    An LLM is...
