@@ -1,15 +1,15 @@
 import type { Route } from "./+types/api.chat";
 import {
   streamChatReply,
-  type ConversationMessage,
+  type ChatMessage,
 } from "../services/openai.server";
 
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_LENGTH = 2_000;
 
-function isConversationMessage(
+function isChatMessage(
   value: unknown,
-): value is ConversationMessage {
+): value is ChatMessage {
   if (
     typeof value !== "object" ||
     value === null ||
@@ -61,7 +61,7 @@ export async function action({
       );
     }
 
-    if (!body.messages.every(isConversationMessage)) {
+    if (!body.messages.every(isChatMessage)) {
       return Response.json(
         { error: "One or more messages are invalid." },
         { status: 400 },
