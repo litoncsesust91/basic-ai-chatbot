@@ -1,5 +1,8 @@
 import OpenAI from "openai";
 
+import { CHATBOT_INSTRUCTIONS } from
+  "../config/chatbot.server";
+
 export type ConversationMessage = {
   role: "user" | "assistant";
   content: string;
@@ -28,15 +31,11 @@ export async function streamChatReply(
     throw new Error("OPENAI_MODEL is not configured");
   }
 
-  return getOpenAIClient().responses.create({
-    model,
-    instructions: [
-      "You are a friendly and helpful assistant.",
-      "Use earlier messages when answering follow-up questions.",
-      "Answer clearly and concisely.",
-      "If you do not know something, say that you do not know.",
-    ].join(" "),
-    input: messages,
-    stream: true,
-  });
+    return getOpenAIClient().responses.create({
+      model,
+      instructions: CHATBOT_INSTRUCTIONS,
+      input: messages,
+      stream: true,
+      max_output_tokens: 500,
+    });
 }

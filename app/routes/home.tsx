@@ -22,12 +22,13 @@ const MAX_CONTEXT_MESSAGES = 20;
 const WELCOME_MESSAGE: ChatMessage = {
   id: "welcome",
   role: "assistant",
-  content: "Hello! How can I help you today?",
+  content:
+    "Welcome to Demo Store! How can I help you today?",
 };
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Basic AI Chatbot" },
+    { title: "Demo Store Assistant" },
     {
       name: "description",
       content: "A basic chatbot built with React Router and OpenAI",
@@ -198,8 +199,8 @@ export default function Home() {
       <section className="chat-card">
         <header className="chat-header">
           <div>
-            <h1>AI Assistant</h1>
-            <p>Basic LLM chatbot</p>
+            <h1>Demo Store Assistant</h1>
+            <p>Products, delivery and return support</p>
           </div>
 
           <div className="header-actions">
