@@ -19,16 +19,16 @@ function getOpenAIClient(): OpenAI {
   return client;
 }
 
-export async function generateChatReply(
+export async function streamChatReply(
   messages: ConversationMessage[],
-): Promise<string> {
+) {
   const model = process.env.OPENAI_MODEL;
 
   if (!model) {
     throw new Error("OPENAI_MODEL is not configured");
   }
 
-  const response = await getOpenAIClient().responses.create({
+  return getOpenAIClient().responses.create({
     model,
     instructions: [
       "You are a friendly and helpful assistant.",
@@ -37,7 +37,6 @@ export async function generateChatReply(
       "If you do not know something, say that you do not know.",
     ].join(" "),
     input: messages,
+    stream: true,
   });
-
-  return response.output_text;
 }

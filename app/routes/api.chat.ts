@@ -1,6 +1,6 @@
 import type { Route } from "./+types/api.chat";
 import {
-  generateChatReply,
+  streamChatReply,
   type ConversationMessage,
 } from "../services/openai.server";
 
@@ -82,9 +82,39 @@ export async function action({
       );
     }
 
-    const answer = await generateChatReply(messages);
+    const openAIStream = await streamChatReply(messages);
+    const encoder = new TextEncoder();
 
-    return Response.json({ answer });
+    const responseStream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        try {
+          for await (const event of openAIStream) {
+            if (event.type === "response.output_text.delta") {
+              controller.enqueue(
+                encoder.encode(event.delta),
+              );
+            }
+
+            if (event.type === "error") {
+              throw new Error(event.message);
+            }
+          }
+
+          controller.close();
+        } catch (error) {
+          console.error("Streaming failed:", error);
+          controller.error(error);
+        }
+      },
+    });
+
+    return new Response(responseStream, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
   } catch (error) {
     console.error("Chat request failed:", error);
 

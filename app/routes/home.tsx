@@ -13,8 +13,7 @@ type ChatMessage = {
   content: string;
 };
 
-type ChatResponse = {
-  answer?: string;
+type ErrorResponse = {
   error?: string;
 };
 
@@ -90,9 +89,17 @@ export default function Home() {
       content: message,
     };
 
+    const assistantId = crypto.randomUUID();
     const updatedMessages = [...messages, userMessage];
 
-    setMessages(updatedMessages);
+    setMessages([
+      ...updatedMessages,
+      {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+      },
+    ]);
 
     setDraft("");
     setError("");
@@ -114,33 +121,67 @@ export default function Home() {
         }),
       });
 
-      const data = (await response.json()) as ChatResponse;
-
       if (!response.ok) {
-        throw new Error(data.error ?? "The request failed.");
+        const data =
+          (await response.json()) as ErrorResponse;
+
+        throw new Error(
+          data.error ?? "The request failed.",
+        );
       }
 
-      if (!data.answer) {
-        throw new Error("The assistant returned an empty answer.");
+      if (!response.body) {
+        throw new Error(
+          "The server did not return a response stream.",
+        );
       }
 
-      const assistantMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: data.answer,
-      };
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantText = "";
 
-      setMessages((current) => [
-        ...current,
-        assistantMessage,
-      ]);
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          assistantText += decoder.decode();
+          break;
+        }
+
+        assistantText += decoder.decode(value, {
+          stream: true,
+        });
+
+        setMessages((current) =>
+          current.map((currentMessage) =>
+            currentMessage.id === assistantId
+              ? {
+                  ...currentMessage,
+                  content: assistantText,
+                }
+              : currentMessage,
+          ),
+        );
+      }
+
+      if (!assistantText.trim()) {
+        throw new Error(
+          "The assistant returned an empty answer.",
+        );
+      }
     } catch (caughtError) {
-      const message =
+      setMessages((current) =>
+        current.filter(
+          (currentMessage) =>
+            currentMessage.id !== assistantId,
+        ),
+      );
+
+      setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "Something went wrong.";
-
-      setError(message);
+          : "Something went wrong.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -195,16 +236,12 @@ export default function Home() {
                   : "Assistant"}
               </strong>
 
-              <p>{message.content}</p>
+              <p>
+              {message.content ||
+                (isSubmitting ? "Thinking…" : "")}
+              </p>
             </article>
-          ))}
-
-          {isSubmitting && (
-            <article className="message message-assistant">
-              <strong>Assistant</strong>
-              <p>Thinking…</p>
-            </article>
-          )}
+          ))}          
         </div>
 
         {error && (
