@@ -1,7 +1,35 @@
 import type { Route } from "./+types/api.chat";
-import { generateChatReply } from "../services/openai.server";
+import {
+  generateChatReply,
+  type ConversationMessage,
+} from "../services/openai.server";
 
+const MAX_MESSAGES = 20;
 const MAX_MESSAGE_LENGTH = 2_000;
+
+function isConversationMessage(
+  value: unknown,
+): value is ConversationMessage {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("role" in value) ||
+    !("content" in value)
+  ) {
+    return false;
+  }
+
+  const validRole =
+    value.role === "user" ||
+    value.role === "assistant";
+
+  const validContent =
+    typeof value.content === "string" &&
+    value.content.trim().length > 0 &&
+    value.content.length <= MAX_MESSAGE_LENGTH;
+
+  return validRole && validContent;
+}
 
 export async function action({
   request,
@@ -12,32 +40,49 @@ export async function action({
     if (
       typeof body !== "object" ||
       body === null ||
-      !("message" in body) ||
-      typeof body.message !== "string"
+      !("messages" in body) ||
+      !Array.isArray(body.messages)
     ) {
       return Response.json(
-        { error: "A text message is required." },
+        { error: "A messages array is required." },
         { status: 400 },
       );
     }
 
-    const message = body.message.trim();
-
-    if (!message) {
+    if (
+      body.messages.length === 0 ||
+      body.messages.length > MAX_MESSAGES
+    ) {
       return Response.json(
-        { error: "Message cannot be empty." },
+        {
+          error: `Send between 1 and ${MAX_MESSAGES} messages.`,
+        },
         { status: 400 },
       );
     }
 
-    if (message.length > MAX_MESSAGE_LENGTH) {
+    if (!body.messages.every(isConversationMessage)) {
       return Response.json(
-        { error: "Message is too long." },
+        { error: "One or more messages are invalid." },
         { status: 400 },
       );
     }
 
-    const answer = await generateChatReply(message);
+    const messages = body.messages.map((message) => ({
+      role: message.role,
+      content: message.content.trim(),
+    }));
+
+    const lastMessage = messages.at(-1);
+
+    if (lastMessage?.role !== "user") {
+      return Response.json(
+        { error: "The final message must be from the user." },
+        { status: 400 },
+      );
+    }
+
+    const answer = await generateChatReply(messages);
 
     return Response.json({ answer });
   } catch (error) {

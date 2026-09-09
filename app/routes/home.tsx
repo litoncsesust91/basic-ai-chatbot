@@ -52,7 +52,10 @@ export default function Home() {
       content: message,
     };
 
-    setMessages((current) => [...current, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+
+    setMessages(updatedMessages);
+
     setDraft("");
     setError("");
     setIsSubmitting(true);
@@ -63,7 +66,14 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({
+          messages: updatedMessages.map(
+            ({ role, content }) => ({
+              role,
+              content,
+            }),
+          ),
+        }),
       });
 
       const data = (await response.json()) as ChatResponse;

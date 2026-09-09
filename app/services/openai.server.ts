@@ -1,5 +1,10 @@
 import OpenAI from "openai";
 
+export type ConversationMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 let client: OpenAI | undefined;
 
 function getOpenAIClient(): OpenAI {
@@ -15,7 +20,7 @@ function getOpenAIClient(): OpenAI {
 }
 
 export async function generateChatReply(
-  message: string,
+  messages: ConversationMessage[],
 ): Promise<string> {
   const model = process.env.OPENAI_MODEL;
 
@@ -27,10 +32,11 @@ export async function generateChatReply(
     model,
     instructions: [
       "You are a friendly and helpful assistant.",
+      "Use earlier messages when answering follow-up questions.",
       "Answer clearly and concisely.",
       "If you do not know something, say that you do not know.",
     ].join(" "),
-    input: message,
+    input: messages,
   });
 
   return response.output_text;
