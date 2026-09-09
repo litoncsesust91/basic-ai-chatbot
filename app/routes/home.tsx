@@ -1,4 +1,10 @@
-import { useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import type { Route } from "./+types/home";
 
 type ChatMessage = {
@@ -10,6 +16,14 @@ type ChatMessage = {
 type ChatResponse = {
   answer?: string;
   error?: string;
+};
+
+const MAX_CONTEXT_MESSAGES = 20;
+
+const WELCOME_MESSAGE: ChatMessage = {
+  id: "welcome",
+  role: "assistant",
+  content: "Hello! How can I help you today?",
 };
 
 export function meta({}: Route.MetaArgs) {
@@ -24,16 +38,40 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content: "Hello! How can I help you today?",
-    },
+    WELCOME_MESSAGE,
   ]);
 
   const [draft, setDraft] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const messageListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const messageList = messageListRef.current;
+
+    if (!messageList) {
+      return;
+    }
+
+    messageList.scrollTo({
+      top: messageList.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, isSubmitting]);
+
+  function handleKeyDown(
+    event: KeyboardEvent<HTMLTextAreaElement>,
+  ) {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.nativeEvent.isComposing
+    ) {
+      event.preventDefault();
+      event.currentTarget.form?.requestSubmit();
+    }
+  }
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
@@ -67,12 +105,12 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: updatedMessages.map(
-            ({ role, content }) => ({
+          messages: updatedMessages
+            .slice(-MAX_CONTEXT_MESSAGES)
+            .map(({ role, content }) => ({
               role,
               content,
-            }),
-          ),
+            })),
         }),
       });
 
@@ -108,6 +146,12 @@ export default function Home() {
     }
   }
 
+  function clearConversation() {
+    setMessages([WELCOME_MESSAGE]);
+    setDraft("");
+    setError("");
+  }
+
   return (
     <main className="chat-page">
       <section className="chat-card">
@@ -117,13 +161,25 @@ export default function Home() {
             <p>Basic LLM chatbot</p>
           </div>
 
-          <span className="status">
-            <span className="status-dot" />
-            Online
-          </span>
+          <div className="header-actions">
+            <span className="status">
+              <span className="status-dot" />
+              Online
+            </span>
+
+            <button
+              className="clear-button"
+              type="button"
+              onClick={clearConversation}
+              disabled={isSubmitting || messages.length === 1}
+            >
+              Clear
+            </button>
+          </div>
         </header>
 
         <div
+          ref={messageListRef}
           className="message-list"
           aria-live="polite"
           aria-label="Conversation"
@@ -173,6 +229,7 @@ export default function Home() {
               onChange={(event) =>
                 setDraft(event.target.value)
               }
+              onKeyDown={handleKeyDown}
               placeholder="Ask me something..."
               rows={2}
               maxLength={2_000}

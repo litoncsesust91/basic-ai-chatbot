@@ -71,6 +71,30 @@ textarea {
   font-size: 0.875rem;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.clear-button {
+  padding: 7px 11px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  color: #344054;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.clear-button:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+.clear-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .status {
   display: flex;
   align-items: center;
