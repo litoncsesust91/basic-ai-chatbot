@@ -70,3 +70,6 @@ Install the TypeScript runner
 npm run eval:chatbot
 npm run typecheck
 npm run eval:chatbot
+
+Run it from your project root: Verify Vector Store retrieval directly
+    npx tsx --env-file=.env scripts/test-retrieval.ts

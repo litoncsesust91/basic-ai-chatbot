@@ -13,10 +13,21 @@ if (!vectorStoreId) {
 
 const openai = new OpenAI({ apiKey });
 
+console.log("Checking Vector Store files...");
+
+const files = await openai.vectorStores.files.list(vectorStoreId);
+
+console.table(
+  files.data.map((file) => ({
+    fileId: file.id,
+    status: file.status,
+  })),
+);
+
+console.log("\nSearching for Nimbus product information...");
+
 const results = await openai.vectorStores.search(vectorStoreId, {
-  query: "Nimbus Travel Backpack colours price and capacity",
+  query: "Nimbus Travel Backpack colours, price, capacity, and laptop size",
 });
 
-console.dir(results.data, {
-  depth: 6,
-});
+console.log(JSON.stringify(results.data, null, 2));
