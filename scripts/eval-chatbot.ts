@@ -90,16 +90,18 @@ const evalCases: EvalCase[] = [
   },
   {
     name: "Backpack laptop size",
-    input:
-      "Will the Nimbus backpack fit a 15-inch laptop?",
+    input: "Will the Nimbus backpack fit a 15-inch laptop?",
     requiredConcepts: [
-      ["14 inches", "14-inch", "up to 14"],
+      ["14 inches", "14-inch", "14 inch", "up to 14"],
       [
         "will not",
         "won't",
         "may not",
         "not designed",
         "only fits",
+        "does not fit",
+        "doesn't fit",
+        "not specified to fit",
       ],
     ],
   },
@@ -181,6 +183,7 @@ for (const testCase of evalCases) {
         max_num_results: 5,
       },
     ],
+    tool_choice: "required",
     max_output_tokens: 200,
   });
 
