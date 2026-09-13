@@ -89,18 +89,6 @@ export async function action({
       async start(controller) {
         try {
           for await (const event of openAIStream) {
-            if (event.type === "response.file_search_call.in_progress") {
-              console.log("[RAG] File Search started");
-            }
-
-            if (event.type === "response.file_search_call.searching") {
-              console.log("[RAG] Searching Vector Store");
-            }
-
-            if (event.type === "response.file_search_call.completed") {
-              console.log("[RAG] File Search completed");
-            }
-
             if (event.type === "response.output_text.delta") {
               controller.enqueue(encoder.encode(event.delta));
             }
