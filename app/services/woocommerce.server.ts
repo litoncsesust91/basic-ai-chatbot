@@ -119,7 +119,7 @@ function mapProduct(
 
 export async function searchProducts(
   searchTerm: string,
-  limit = 5,
+  limit = 3,
 ): Promise<ProductSearchResult[]> {
   const normalizedSearchTerm = searchTerm.trim();
 
