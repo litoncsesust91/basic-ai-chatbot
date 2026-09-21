@@ -84,3 +84,10 @@ Why we map the response
     Risk of exposing unnecessary internal data
 
     ProductSearchResult acts as a safe, small data-transfer object.
+
+
+Three separate responsibilities
+    OpenAI tool schema → Tool executor → WooCommerce service
+
+
+Run: npx tsx --env-file=.env scripts/test-product-tool.ts "hund" //Use a search term matching a real WooCommerce product if necessary.
