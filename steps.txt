@@ -91,3 +91,7 @@ Three separate responsibilities
 
 
 Run: npx tsx --env-file=.env scripts/test-product-tool.ts "hund" //Use a search term matching a real WooCommerce product if necessary.
+
+
+Question → OpenAI requests tool → Node executes tool
+→ Tool result returns to OpenAI → Final answer
