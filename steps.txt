@@ -73,3 +73,14 @@ npm run eval:chatbot
 
 Run it from your project root: Verify Vector Store retrieval directly
     npx tsx --env-file=.env scripts/test-retrieval.ts
+
+
+Why we map the response
+    WooCommerce products contain many fields. Sending all of them to the LLM would increase:
+
+    Token usage
+    Cost
+    Latency
+    Risk of exposing unnecessary internal data
+
+    ProductSearchResult acts as a safe, small data-transfer object.
