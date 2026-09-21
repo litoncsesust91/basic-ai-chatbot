@@ -82,24 +82,16 @@ export async function action({
       );
     }
 
-    const openAIStream = await streamChatReply(messages);
+    const textStream = streamChatReply(messages);
     const encoder = new TextEncoder();
 
     const responseStream = new ReadableStream<Uint8Array>({
       async start(controller) {
         try {
-          for await (const event of openAIStream) {
-            if (event.type === "response.output_text.delta") {
-              controller.enqueue(encoder.encode(event.delta));
-            }
-
-            if (event.type === "response.failed") {
-              console.error("[OpenAI] Response failed:", event.response.error);
-            }
-
-            if (event.type === "error") {
-              throw new Error(event.message);
-            }
+          for await (const textChunk of textStream) {
+            controller.enqueue(
+              encoder.encode(textChunk),
+            );
           }
 
           controller.close();

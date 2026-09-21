@@ -95,3 +95,14 @@ Run: npx tsx --env-file=.env scripts/test-product-tool.ts "hund" //Use a search 
 
 Question → OpenAI requests tool → Node executes tool
 → Tool result returns to OpenAI → Final answer
+
+Step 11E — Integrate tools into the streaming chatbot
+
+We will change streamChatReply() into an async generator that:
+
+Streams normal text.
+Detects function calls.
+Executes WooCommerce tools.
+Returns tool outputs using call_id.
+Streams the final answer.
+Limits tool rounds to prevent infinite loops.
